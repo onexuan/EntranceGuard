@@ -6,6 +6,7 @@
  * TO DO : change the P-net and update the generat box
  */
 
+#include <android/log.h>
 #include "mtcnn.h"
 
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG,TAG,__VA_ARGS__)
@@ -17,7 +18,7 @@ bool cmpScore(Bbox lsh, Bbox rsh) {
         return false;
 }
 
-
+char* TAG = "MTCNN";
 //MTCNN::MTCNN(){}
 MTCNN::MTCNN(const string &model_path) {
 
@@ -315,23 +316,29 @@ void MTCNN::detect(ncnn::Mat& img_, std::vector<Bbox>& finalBbox_){
     refine(thirdBbox_, img_h, img_w, true);
     nms(thirdBbox_, nms_threshold[2], "Min");
     finalBbox_ = thirdBbox_;
+
+    ncnn::Mat dst;
+    ncnn::copy_cut_border(img, dst, finalBbox_[0].x1,finalBbox_[0].y1, finalBbox_[0].x2, finalBbox_[0].y2);
 }
 
-void MTCNN::FaceVer(ncnn::Mat tempIm, std::vector<float> vector){
-    ncnn::Mat in,out;
+void MTCNN::FaceVer(ncnn::Mat& tempIn, std::vector<float> &vector){
+    ncnn::Mat in, out;
+
+    ncnn::resize_bilinear(tempIn, in, 112, 112);
+
     ncnn::Extractor ex = Facever.create_extractor();
-    ex.set_num_threads(4);
+    ex.set_num_threads(8);
     ex.set_light_mode(true);
     ex.input("data", in);
-    ex.extract("fc7", out);
+    ex.extract("fc1", out);
     for(int i = 0;i<out.w;i++)
     {
-        std::cout<<out[i]<<std::endl;
+        std::cout << out[i];
     }
 }
 
-void MTCNN::FAge(ncnn::Mat tempIm, std::vector<float> vector) {
-    ncnn::Mat in, out;
+void MTCNN::FAge(ncnn::Mat in, std::vector<float> vector) {
+    ncnn::Mat out;
     ncnn::Extractor ex = Fage.create_extractor();
     ex.set_num_threads(4);
     ex.set_light_mode(true);
@@ -339,12 +346,12 @@ void MTCNN::FAge(ncnn::Mat tempIm, std::vector<float> vector) {
     ex.extract("fc7", out);
     for(int i = 0;i<out.w;i++)
     {
-        std::cout<<out[i]<<std::endl;
+        vector[i] = out[i];
     }
 }
 
-void MTCNN::FGender(ncnn::Mat tempIm, std::vector<float> vector) {
-    ncnn::Mat in, out;
+void MTCNN::FGender(ncnn::Mat in, std::vector<float> vector) {
+    ncnn::Mat out;
     ncnn::Extractor ex = Fgender.create_extractor();
     ex.set_num_threads(4);
     ex.set_light_mode(true);
@@ -352,7 +359,7 @@ void MTCNN::FGender(ncnn::Mat tempIm, std::vector<float> vector) {
     ex.extract("fc7", out);
     for(int i = 0;i<out.w;i++)
     {
-        std::cout<<out[i]<<std::endl;
+        vector[i] = out[i];
     }
 }
 //void MTCNN::detection(const cv::Mat& img, std::vector<cv::Rect>& rectangles){

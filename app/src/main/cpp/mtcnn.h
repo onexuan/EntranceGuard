@@ -37,7 +37,7 @@ public:
 
     void SetMinFace(int minSize);
     void detect(ncnn::Mat& img_, std::vector<Bbox>& finalBbox);
-    void FaceVer(ncnn::Mat tempIm, std::vector<float> vector);
+    void FaceVer(ncnn::Mat &tempIm, std::vector<float> &vector);
     void FAge(ncnn::Mat tempIm, std::vector<float> vector);
     void FGender(ncnn::Mat tempIm, std::vector<float> vector);
     //  void detection(const cv::Mat& img, std::vector<cv::Rect>& rectangles);

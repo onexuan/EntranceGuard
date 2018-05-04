@@ -16,7 +16,7 @@ static MTCNN *mtcnn;
 //sdk是否初始化成功
 bool detection_sdk_init_ok = false;
 
-const int resize_ratio = 4;
+const int resize_ratio = 1;
 
 extern "C" {
 
@@ -291,13 +291,15 @@ Java_com_deepthink_entranceguard_utils_MTCNN_FaceFeature(JNIEnv *env, jobject in
     }
 
     ncnn::Mat ncnn_img_resize;
-    ncnn::resize_bilinear(ncnn_img, ncnn_img_resize, imageWidth / resize_ratio, imageHeight / resize_ratio);
+//    ncnn::resize_bilinear(ncnn_img, ncnn_img_resize, 112, 112);
 
     std::vector<float> faceRet;
     mtcnn->FaceVer(ncnn_img_resize, faceRet);
 
     jfloatArray tInfo = env->NewFloatArray(3);
-    env->SetFloatArrayRegion(tInfo, 0, 3, faceRet.data());
+    if (faceRet.empty() == false) {
+        env->SetFloatArrayRegion(tInfo, 0, 3, faceRet.data());
+    }
     env->ReleaseByteArrayElements(imageDate_, imageDate, 0);
     return tInfo;
 }

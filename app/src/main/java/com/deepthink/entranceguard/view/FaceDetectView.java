@@ -56,19 +56,20 @@ public class FaceDetectView extends SurfaceView implements SurfaceHolder.Callbac
     }
 
     public static Camera getCameraInstance(){
-        Camera c = null;
-        Camera.CameraInfo info= new Camera.CameraInfo();
-        int count= Camera.getNumberOfCameras();
-        for (int i = 0; i < count; i++) {
-            Camera.getCameraInfo(i, info);
-            if (info.facing==Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                try {
-                    c = Camera.open(i);
-                } catch (RuntimeException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
+//        Camera c = null;
+//        Camera.CameraInfo info= new Camera.CameraInfo();
+//        int count= Camera.getNumberOfCameras();
+//        for (int i = 0; i < count; i++) {
+//            Camera.getCameraInfo(i, info);
+//            if (info.facing==Camera.CameraInfo.CAMERA_FACING_FRONT) {
+//                try {
+//                    c = Camera.open(i);
+//                } catch (RuntimeException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }
+        Camera c = Camera.open();
         return c;
     }
 
@@ -103,9 +104,6 @@ public class FaceDetectView extends SurfaceView implements SurfaceHolder.Callbac
 
         try {
             mCamera.setPreviewDisplay(mSurfaceHolder);
-            Camera.Parameters params = mCamera.getParameters();
-            params.setPictureFormat(ImageFormat.NV21);
-            mCamera.setParameters(params);
             mCamera.setDisplayOrientation(90);
             mCamera.setPreviewCallback(this);
             mCamera.startPreview();

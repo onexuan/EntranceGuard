@@ -21,4 +21,11 @@
         android:layout_marginBottom="23dp"
         android:src="@android:drawable/ic_menu_camera" />
 
+    <ImageView
+        android:id="@+id/border"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/border"
+        android:visibility="invisible" />
+
 </RelativeLayout>
