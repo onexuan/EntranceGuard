@@ -35,6 +35,7 @@ public class FaceDetectView extends SurfaceView implements SurfaceHolder.Callbac
     private OnCameraListener onCameraListener = null;
 
     private boolean mTakePicture = false;
+    private Camera.Size size = null;
 
     public FaceDetectView(Context context) {
         super(context);
@@ -56,25 +57,33 @@ public class FaceDetectView extends SurfaceView implements SurfaceHolder.Callbac
     }
 
     public static Camera getCameraInstance(){
-//        Camera c = null;
-//        Camera.CameraInfo info= new Camera.CameraInfo();
-//        int count= Camera.getNumberOfCameras();
-//        for (int i = 0; i < count; i++) {
-//            Camera.getCameraInfo(i, info);
-//            if (info.facing==Camera.CameraInfo.CAMERA_FACING_FRONT) {
-//                try {
-//                    c = Camera.open(i);
-//                } catch (RuntimeException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        }
-        Camera c = Camera.open();
+        Camera c = null;
+        Camera.CameraInfo info= new Camera.CameraInfo();
+        int count= Camera.getNumberOfCameras();
+        for (int i = 0; i < count; i++) {
+            Camera.getCameraInfo(i, info);
+            if (info.facing==Camera.CameraInfo.CAMERA_FACING_FRONT) {
+                try {
+                    c = Camera.open(i);
+                } catch (RuntimeException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        if (c == null) {
+            c = Camera.open();
+        }
+
         return c;
     }
 
     public void takePicture() {
         mTakePicture = true;
+    }
+
+    public Camera.Size getCameraSize() {
+        return size;
     }
 
     @Override
@@ -119,7 +128,7 @@ public class FaceDetectView extends SurfaceView implements SurfaceHolder.Callbac
 
     @Override
     public void onPreviewFrame(byte[] data, Camera camera) {
-        Camera.Size size = camera.getParameters().getPreviewSize();
+        size = camera.getParameters().getPreviewSize();
         try{
             YuvImage image = new YuvImage(data, ImageFormat.NV21, size.width, size.height, null);
             if(image!=null){

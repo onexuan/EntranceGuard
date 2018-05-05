@@ -57,6 +57,13 @@ public class MTCNNUtils {
         return mtcnn.FaceFeature(imageDate, width, height, 4);
     }
 
+    public int[] getFaceInfo(Bitmap bmp) {
+        int width = bmp.getWidth();
+        int height = bmp.getHeight();
+        byte[] imageDate = getPixelsRGBA(bmp);
+        return mtcnn.FaceInfo(imageDate, width, height, 4);
+    }
+
     private void init() {
         try {
             copyBigDataToSD("det1.bin");
@@ -68,8 +75,8 @@ public class MTCNNUtils {
             copyBigDataToSD("det1.param");
             copyBigDataToSD("det2.param");
             copyBigDataToSD("det3.param");
-            copyBigDataToSD("fage.param");
-            copyBigDataToSD("fgender.param");
+            copyBigDataToSD("fage.params");
+            copyBigDataToSD("fgender.params");
             copyBigDataToSD("y1.param");
         } catch (IOException e) {
             e.printStackTrace();

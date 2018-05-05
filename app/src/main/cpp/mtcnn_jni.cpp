@@ -220,23 +220,32 @@ Java_com_deepthink_entranceguard_utils_MTCNN_FaceInfo(JNIEnv *env, jobject insta
     }
 
     ncnn::Mat ncnn_img_resize;
-    ncnn::resize_bilinear(ncnn_img, ncnn_img_resize, imageWidth / resize_ratio, imageHeight / resize_ratio);
+    ncnn::resize_bilinear(ncnn_img, ncnn_img_resize, 112, 112);
 
     std::vector<float> ageRet, genderRet;
     mtcnn->FAge(ncnn_img_resize, ageRet);
-    mtcnn->FGender(ncnn_img_resize, ageRet);
+    mtcnn->FGender(ncnn_img_resize, genderRet);
 
     int* info = new int[2];
     info[0] = 0;
-    int tmp = 5;
+
+    float sum = 0, age = 0;
     for (int i = 0; i < ageRet.size(); ++i) {
-        info[0] += int(tmp * ageRet[i]);
+        sum += exp(ageRet[i]);
     }
 
+    int tmp = 5;
+    for (int i = 0; i < ageRet.size(); ++i) {
+        age += tmp * (exp(ageRet[i]) / sum);
+        tmp += 10;
+    }
+
+
+    info[0] = int(age);
     info[1] = (genderRet[0] > genderRet[1]) ? 0 : 1;
 
-    jintArray tInfo = env->NewIntArray(3);
-    env->SetIntArrayRegion(tInfo, 0, 3, info);
+    jintArray tInfo = env->NewIntArray(2);
+    env->SetIntArrayRegion(tInfo, 0, 2, info);
     env->ReleaseByteArrayElements(imageDate_, imageDate, 0);
     return tInfo;
 }
@@ -278,9 +287,6 @@ Java_com_deepthink_entranceguard_utils_MTCNN_FaceFeature(JNIEnv *env, jobject in
         return NULL;
     }
 
-    int32_t minFaceSize=40;
-    mtcnn->SetMinFace(minFaceSize);
-
     unsigned char *faceImageCharDate = (unsigned char*)imageDate;
     ncnn::Mat ncnn_img;
     if(imageChannel==3) {
@@ -291,14 +297,14 @@ Java_com_deepthink_entranceguard_utils_MTCNN_FaceFeature(JNIEnv *env, jobject in
     }
 
     ncnn::Mat ncnn_img_resize;
-//    ncnn::resize_bilinear(ncnn_img, ncnn_img_resize, 112, 112);
+    ncnn::resize_bilinear(ncnn_img, ncnn_img_resize, 112, 112);
 
     std::vector<float> faceRet;
     mtcnn->FaceVer(ncnn_img_resize, faceRet);
 
-    jfloatArray tInfo = env->NewFloatArray(3);
+    jfloatArray tInfo = env->NewFloatArray(512);
     if (faceRet.empty() == false) {
-        env->SetFloatArrayRegion(tInfo, 0, 3, faceRet.data());
+        env->SetFloatArrayRegion(tInfo, 0, 512, faceRet.data());
     }
     env->ReleaseByteArrayElements(imageDate_, imageDate, 0);
     return tInfo;

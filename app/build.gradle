@@ -2,6 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 26
+    buildToolsVersion "26.0.2"
     defaultConfig {
         applicationId "com.deepthink.entranceguard"
         minSdkVersion 22
@@ -41,9 +42,21 @@ android {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'com.android.support.constraint:constraint-layout:1.1.0'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    implementation project(':openCVLibrary340')
+    compile fileTree(dir: "$buildDir/native-libs",include: 'native-libs.jar')
+}
+
+task nativeLibsToJar(type: Jar,description:'create a jar archive of the native libs'){
+    destinationDir file("$buildDir/native-libs")
+    baseName 'native-libs'
+    from fileTree(dir: 'libs',include: '**/*.so')
+    into 'lib/'
+}
+tasks.withType(JavaCompile){
+    compileTask -> compileTask.dependsOn(nativeLibsToJar)
 }

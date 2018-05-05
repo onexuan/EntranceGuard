@@ -27,8 +27,8 @@ MTCNN::MTCNN(const string &model_path) {
             model_path+"/det2.param",
             model_path+"/det3.param",
             model_path+"/y1.param",
-            model_path+"/fage.param",
-            model_path+"/fgender.param"
+            model_path+"/fage.params",
+            model_path+"/fgender.params"
     };
 
     std::vector<std::string> bin_files = {
@@ -316,50 +316,57 @@ void MTCNN::detect(ncnn::Mat& img_, std::vector<Bbox>& finalBbox_){
     refine(thirdBbox_, img_h, img_w, true);
     nms(thirdBbox_, nms_threshold[2], "Min");
     finalBbox_ = thirdBbox_;
-
-    ncnn::Mat dst;
-    ncnn::copy_cut_border(img, dst, finalBbox_[0].x1,finalBbox_[0].y1, finalBbox_[0].x2, finalBbox_[0].y2);
 }
 
-void MTCNN::FaceVer(ncnn::Mat& tempIn, std::vector<float> &vector){
-    ncnn::Mat in, out;
+void MTCNN::FaceVer(ncnn::Mat& tempIn, std::vector<float> &out_vec){
+//    out_vec.clear();
+    ncnn::Mat in, fc_out;
 
-    ncnn::resize_bilinear(tempIn, in, 112, 112);
+    in = tempIn.clone();
+//    ncnn::resize_bilinear(tempIn, in, 112, 112);
+
+    const float mean_vals[3] = {127.5f, 127.5f, 127.5f};
+    const float std_vals[3] = {0.0078125f, 0.0078125f, 0.0078125f};
+    in.substract_mean_normalize(mean_vals, std_vals);
 
     ncnn::Extractor ex = Facever.create_extractor();
-    ex.set_num_threads(8);
+    ex.set_num_threads(4);
     ex.set_light_mode(true);
     ex.input("data", in);
-    ex.extract("fc1", out);
-    for(int i = 0;i<out.w;i++)
+    ex.extract("pre_fc1", fc_out);
+    for(int i = 0; i < fc_out.w; i++)
     {
-        std::cout << out[i];
+        out_vec.push_back(fc_out[i]);
     }
 }
 
-void MTCNN::FAge(ncnn::Mat in, std::vector<float> vector) {
-    ncnn::Mat out;
+void MTCNN::FAge(ncnn::Mat& tempIn, std::vector<float> &vector) {
+    ncnn::Mat in,out;
+    in = tempIn;
     ncnn::Extractor ex = Fage.create_extractor();
     ex.set_num_threads(4);
     ex.set_light_mode(true);
     ex.input("data", in);
-    ex.extract("fc7", out);
+    ex.extract("pre_fc1", out);
     for(int i = 0;i<out.w;i++)
     {
-        vector[i] = out[i];
+        vector.push_back(out[i]);
     }
+
+
 }
 
-void MTCNN::FGender(ncnn::Mat in, std::vector<float> vector) {
-    ncnn::Mat out;
+void MTCNN::FGender(ncnn::Mat& tempIn, std::vector<float> &vector) {
+    ncnn::Mat in,out;
+    in = tempIn;
     ncnn::Extractor ex = Fgender.create_extractor();
     ex.set_num_threads(4);
     ex.set_light_mode(true);
     ex.input("data", in);
-    ex.extract("fc7", out);
+    ex.extract("pre_fc1", out);
     for(int i = 0;i<out.w;i++)
     {
-        vector[i] = out[i];
+        vector.push_back(out[i]);
     }
 }
 //void MTCNN::detection(const cv::Mat& img, std::vector<cv::Rect>& rectangles){
