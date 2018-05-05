@@ -333,11 +333,21 @@ void MTCNN::FaceVer(ncnn::Mat& tempIn, std::vector<float> &out_vec){
     ex.set_num_threads(4);
     ex.set_light_mode(true);
     ex.input("data", in);
-    ex.extract("pre_fc1", fc_out);
+//    ex.extract("pre_fc1", fc_out);
+    ex.extract("fc1", fc_out);
+    float sum = 0;
+
     for(int i = 0; i < fc_out.w; i++)
     {
-        out_vec.push_back(fc_out[i]);
+        sum = sum + fc_out[i] * fc_out[i];
     }
+    sum = sqrt(sum);
+
+    for(int i = 0; i < fc_out.w; i++)
+    {
+        out_vec.push_back(fc_out[i] / sum);
+    }
+
 }
 
 void MTCNN::FAge(ncnn::Mat& tempIn, std::vector<float> &vector) {
@@ -347,7 +357,8 @@ void MTCNN::FAge(ncnn::Mat& tempIn, std::vector<float> &vector) {
     ex.set_num_threads(4);
     ex.set_light_mode(true);
     ex.input("data", in);
-    ex.extract("pre_fc1", out);
+//    ex.extract("pre_fc1", out);
+    ex.extract("softmax", out);
     for(int i = 0;i<out.w;i++)
     {
         vector.push_back(out[i]);
@@ -363,7 +374,8 @@ void MTCNN::FGender(ncnn::Mat& tempIn, std::vector<float> &vector) {
     ex.set_num_threads(4);
     ex.set_light_mode(true);
     ex.input("data", in);
-    ex.extract("pre_fc1", out);
+//    ex.extract("pre_fc1", out);
+    ex.extract("softmax", out);
     for(int i = 0;i<out.w;i++)
     {
         vector.push_back(out[i]);

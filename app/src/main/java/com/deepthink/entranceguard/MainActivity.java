@@ -29,7 +29,9 @@ import com.deepthink.entranceguard.view.FaceDetectView;
 import org.opencv.android.Utils;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.Point;
 import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.video.Video;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Vector;
@@ -135,7 +137,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Face
                     matchedIndex = i;
                 }
             }
-            if (matchedValue > 0.6) {
+            if (matchedValue > 0    ) {
                 Bitmap img = registers.get(matchedIndex).img;
                 Message msg1 = new Message();
                 msg1.what = MSG_MATCH_FACE;
@@ -198,6 +200,22 @@ public class MainActivity extends Activity implements View.OnClickListener, Face
 
     }
 
+//    private Bitmap align(Bitmap bmp, MTCNNFaceInfos.MTCNNFaceInfo info) {
+//        Point[] src = new Point[5];
+//        Point[] dst = new Point[5];
+//
+//        src[0] = new Point(38.2946, 51.6963);
+//        src[1] = new Point(73.5318, 51.5014);
+//        src[2] = new Point(56.0252, 71.7366);
+//        src[3] = new Point(41.5493, 92.3655);
+//        src[4] = new Point(70.7299, 92.2041);
+//
+//        for (int i = 0; i < 5; i++) {
+//            dst[i] = new Point(info.facePoints.get(i).x, info.facePoints.get(i).y);
+//        }
+//
+//    }
+
     public byte[] Bitmap2Bytes(Bitmap bm) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bm.compress(Bitmap.CompressFormat.PNG, 100, baos);
@@ -217,23 +235,23 @@ public class MainActivity extends Activity implements View.OnClickListener, Face
         public void handleMessage(final Message msg) {
             super.handleMessage(msg);
             if (msg.what == MSG_CATCH_FACE) {
-//                float area = msg.arg1;
-//                if (area > 0) {
-//                    Rect oldRect = (Rect) msg.obj;
-//                    Camera.Size size = mCameraView.getCameraSize();
-//                    Rect rect = new Rect(size.height - oldRect.bottom, oldRect.left, size.height - oldRect.top, oldRect.right);
-//                    ViewGroup.MarginLayoutParams margin9 = new ViewGroup.MarginLayoutParams(
-//                            mBorder.getLayoutParams());
-//                    margin9.setMargins(rect.left, rect.top, 0, 0);
-//                    RelativeLayout.LayoutParams layoutParams9 = new RelativeLayout.LayoutParams(margin9);
-//                    layoutParams9.height = rect.height();
-//                    layoutParams9.width = rect.width();
-//                    mBorder.setLayoutParams(layoutParams9);
-//                    mBorder.setVisibility(View.VISIBLE);
-//                }
-//                else {
-//                    mBorder.setVisibility(View.INVISIBLE);
-//                }
+                float area = msg.arg1;
+                if (area > 0) {
+                    Rect oldRect = (Rect) msg.obj;
+                    Camera.Size size = mCameraView.getCameraSize();
+                    Rect rect = new Rect(size.height - oldRect.bottom, oldRect.left, size.height - oldRect.top, oldRect.right);
+                    ViewGroup.MarginLayoutParams margin9 = new ViewGroup.MarginLayoutParams(
+                            mBorder.getLayoutParams());
+                    margin9.setMargins(rect.left, rect.top, 0, 0);
+                    RelativeLayout.LayoutParams layoutParams9 = new RelativeLayout.LayoutParams(margin9);
+                    layoutParams9.height = rect.height();
+                    layoutParams9.width = rect.width();
+                    mBorder.setLayoutParams(layoutParams9);
+                    mBorder.setVisibility(View.VISIBLE);
+                }
+                else {
+                    mBorder.setVisibility(View.INVISIBLE);
+                }
             } else if (msg.what == MSG_MATCH_FACE) {
                 Bitmap img = (Bitmap)msg.obj;
                 mMatched.setImageBitmap(img);
@@ -248,7 +266,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Face
                     str += "女";
                 }
 
-                str += " " + age + "岁";
+                str += " " + age * 10 + "~" + (age + 1) * 10 + "岁";
                 mInfo.setText(str);
                 mInfo.setVisibility(View.VISIBLE);
             }

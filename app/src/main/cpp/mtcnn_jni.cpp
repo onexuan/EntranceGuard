@@ -16,7 +16,7 @@ static MTCNN *mtcnn;
 //sdk是否初始化成功
 bool detection_sdk_init_ok = false;
 
-const int resize_ratio = 1;
+const int resize_ratio = 4;
 
 extern "C" {
 
@@ -120,17 +120,18 @@ Java_com_deepthink_entranceguard_utils_MTCNN_FaceDetect(JNIEnv *env, jobject ins
     int32_t num_face = static_cast<int32_t>(finalBbox.size());
     LOGD("检测到的人脸数目：%d\n", num_face);
 
-    int out_size = 1+num_face*15;
+    int total = 25;
+    int out_size = 1+num_face*total;
     //  LOGD("内部人脸检测完成,开始导出数据");
     int *faceInfo = new int[out_size];
     faceInfo[0] = num_face;
     for(int i=0;i<num_face;i++){
-        faceInfo[15*i+1] = finalBbox[i].x1 * resize_ratio;//left
-        faceInfo[15*i+2] = finalBbox[i].y1 * resize_ratio;//top
-        faceInfo[15*i+3] = min(finalBbox[i].x2 * resize_ratio,imageWidth - 1);//right
-        faceInfo[15*i+4] = min(finalBbox[i].y2 * resize_ratio, imageHeight - 1);//bottom
+        faceInfo[total*i+1] = finalBbox[i].x1 * resize_ratio;//left
+        faceInfo[total*i+2] = finalBbox[i].y1 * resize_ratio;//top
+        faceInfo[total*i+3] = min(finalBbox[i].x2 * resize_ratio,imageWidth - 1);//right
+        faceInfo[total*i+4] = min(finalBbox[i].y2 * resize_ratio, imageHeight - 1);//bottom
         for (int j = 0; j < 10; j++){
-            faceInfo[15*i+5+j] = static_cast<int>(finalBbox[i].ppoint[j]) * resize_ratio;
+            faceInfo[total*i+5+j] = static_cast<int>(finalBbox[i].ppoint[j]) * resize_ratio;
         }
 
         int x_1 = static_cast<int>(finalBbox[i].ppoint[0]);
@@ -139,10 +140,10 @@ Java_com_deepthink_entranceguard_utils_MTCNN_FaceDetect(JNIEnv *env, jobject ins
         int y_2 = static_cast<int>(finalBbox[i].ppoint[6]);
         int x_3 = static_cast<int>(finalBbox[i].ppoint[2]);
         int y_3 = static_cast<int>(finalBbox[i].ppoint[7]);
-//        float x_4 = finalBbox[i].ppoint[3];
-//        float y_4 = finalBbox[i].ppoint[8];
-//        float x_5 = finalBbox[i].ppoint[4];
-//        float y_5 = finalBbox[i].ppoint[10];
+        int x_4 = static_cast<int>(finalBbox[i].ppoint[3]);
+        int y_4 = static_cast<int>(finalBbox[i].ppoint[8]);
+        int x_5 = static_cast<int>(finalBbox[i].ppoint[4]);
+        int y_5 = static_cast<int>(finalBbox[i].ppoint[10]);
 
         float dst_1 = sqrt(static_cast<float>((x_1 - x_3)*(x_1 - x_3)+(y_1 - y_3)*(y_1 - y_3)));
         float dst_2 = sqrt(static_cast<float>((x_2 - x_3)*(x_2 - x_3)+(y_2 - y_3)*(y_2 - y_3)));
@@ -156,10 +157,19 @@ Java_com_deepthink_entranceguard_utils_MTCNN_FaceDetect(JNIEnv *env, jobject ins
 
         LOGD("score: %f\n",score);
 
-        faceInfo[15*i+5+10] = static_cast<int>(score);
-        LOGD("faceInfo[15*i+5+10]: %d\n",faceInfo[15*i+5+10]);
+        faceInfo[total*i+5+10] = static_cast<int>(score);
+        LOGD("faceInfo[total*i+5+10]: %d\n",faceInfo[total*i+5+10]);
 
-
+        faceInfo[total*i+15+1] = x_1;
+        faceInfo[total*i+15+2] = y_1;
+        faceInfo[total*i+15+3] = x_2;
+        faceInfo[total*i+15+4] = y_2;
+        faceInfo[total*i+15+5] = x_3;
+        faceInfo[total*i+15+6] = y_3;
+        faceInfo[total*i+15+7] = x_4;
+        faceInfo[total*i+15+8] = y_4;
+        faceInfo[total*i+15+9] = x_5;
+        faceInfo[total*i+15+10] = y_5;
     }
 
     jintArray tFaceInfo = env->NewIntArray(out_size);
@@ -229,19 +239,15 @@ Java_com_deepthink_entranceguard_utils_MTCNN_FaceInfo(JNIEnv *env, jobject insta
     int* info = new int[2];
     info[0] = 0;
 
-    float sum = 0, age = 0;
+    int maxIndex = 0;
     for (int i = 0; i < ageRet.size(); ++i) {
-        sum += exp(ageRet[i]);
-    }
-
-    int tmp = 5;
-    for (int i = 0; i < ageRet.size(); ++i) {
-        age += tmp * (exp(ageRet[i]) / sum);
-        tmp += 10;
+        if (ageRet[i] > ageRet[maxIndex]) {
+            maxIndex = i;
+        }
     }
 
 
-    info[0] = int(age);
+    info[0] = maxIndex;
     info[1] = (genderRet[0] > genderRet[1]) ? 0 : 1;
 
     jintArray tInfo = env->NewIntArray(2);

@@ -11,16 +11,14 @@ android {
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         ndk {
-            moduleName "UsbCameraProc"
-            abiFilters "armeabi-v7a"
-            ldLibs "log","jnigraphics"
+            abiFilters 'armeabi-v7a', 'arm64-v8a' //,'x86', 'x86_64', 'armeabi', 'arm64-v8a'
             stl "gnustl_static"
         }
         externalNativeBuild {
             cmake {
-                arguments "-DANDROID_TOOLCHAIN=gcc"
-                cFlags "-fopenmp -O3 -fvisibility=hidden -fomit-frame-pointer -fstrict-aliasing -ffunction-sections -fdata-sections -ffast-math "
-                cppFlags "-fopenmp -O3 -fvisibility=hidden -fvisibility-inlines-hidden -fomit-frame-pointer -fstrict-aliasing -ffunction-sections -fdata-sections -ffast-math "
+                arguments "-DANDROID_TOOLCHAIN=clang"
+                cFlags "-fopenmp -O2 -fvisibility=hidden -fomit-frame-pointer -fstrict-aliasing -ffunction-sections -fdata-sections -ffast-math "
+                cppFlags "-fopenmp -O2 -fvisibility=hidden -fvisibility-inlines-hidden -fomit-frame-pointer -fstrict-aliasing -ffunction-sections -fdata-sections -ffast-math "
                 cppFlags ""
                 cppFlags "-std=c++11"
                 cppFlags "-frtti"
